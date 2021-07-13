@@ -26,9 +26,9 @@ jobs:
 
       - name: Test webpages
         run: python3 tests/test_basic.py
-      - name: Test webpages
+      - name: Test Users
         run: python3 tests/test_users.py
-      - name: Check code coverage                        #new from here down
+      - name: Check code coverage                        
         run: |
           python3 -m coverage run -m unittest main.py
           python3 -m coverage run -m unittest tests/test_basic.py
