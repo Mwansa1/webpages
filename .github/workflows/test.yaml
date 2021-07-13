@@ -31,8 +31,8 @@ jobs:
       - name: Check code coverage                        #new from here down
         run: |
           python3 -m coverage run -m unittest main.py
-          python3 -m coverage run -m unittest test_basic.py
-          python3 -m coverage run -m unittest test_users.py
+          python3 -m coverage run -m unittest tests/test_basic.py
+          python3 -m coverage run -m unittest tests/test_users.py
           python3 -m coverage report
           python3 -m coverage html
           
