@@ -4,11 +4,15 @@ from flask_sqlalchemy import SQLAlchemy
 from audio import printWAV
 import time, random, threading
 from turbo_flask import Turbo
+from flask_bcrypt import Bcrypt
+
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '17e81666b51cd4989ff8a76af64ba52a'
+# app.config['SECRET_KEY'] = '17e81666b51cd4989ff8a76af64ba52a'
+app.config['SECRET_KEY'] = '10364988612687b4f1a2b1cbba9a2243'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
 interval=10
 FILE_NAME = "poem.wav"
 turbo = Turbo(app)
@@ -21,8 +25,9 @@ class User(db.Model):
   
 
 
-def __repr__(self):
+  def __repr__(self):
     return f"User('{self.username}', '{self.email}')"
+  
 @app.route("/home")
 @app.route("/")
 def home():
@@ -31,11 +36,18 @@ def home():
 @app.route("/second_page")
 def second_page():
     return render_template('second_page.html', subtitle='Second Page', text='This is the second page')
-
+  
+@app.route("/about")
+def about():
+    return render_template('about.html', subtitle='About', text='This is the about page')
+  
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit(): # checks if entries are valid
+      user_password = form.password.data
+      pw_hash = bcrypt.generate_password_hash(user_password)
+      print(pw_hash)
       user = User(username=form.username.data, email=form.email.data, password=form.password.data)
       db.session.add(user)
       db.session.commit()
