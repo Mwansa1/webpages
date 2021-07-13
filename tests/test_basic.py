@@ -1,7 +1,7 @@
 import unittest, sys
 
 sys.path.append('../webpages') # imports python file from parent directory
-from tryout import app #imports flask app object
+from main import app #imports flask app object
 
 class BasicTests(unittest.TestCase):
 
