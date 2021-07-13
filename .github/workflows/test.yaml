@@ -22,6 +22,7 @@ jobs:
           pip3 install email-validator
           pip3 install flask-bcrypt
           pip3 install speechRecognition
+          pip3 install turbo-flask
 
       - name: Test webpages
         run: python3 tests/test_basic.py
