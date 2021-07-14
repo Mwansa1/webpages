@@ -43,17 +43,21 @@ def about():
   
 @app.route("/register", methods=['GET', 'POST'])
 def register():
-    form = RegistrationForm()
-    if form.validate_on_submit(): # checks if entries are valid
+  form = RegistrationForm()
+  if form.validate_on_submit(): # checks if entries are valid
+    try:
       user_password = form.password.data
       pw_hash = bcrypt.generate_password_hash(user_password)
       print(pw_hash)
       user = User(username=form.username.data, email=form.email.data, password=form.password.data)
       db.session.add(user)
       db.session.commit()
+    except Exception as e:
+      flash(f'The following error occured {e}')
+    else:
       flash(f'Account created for {form.username.data}!', 'success')
       return redirect(url_for('home')) # if so - send to home page
-    return render_template('register.html', title='Register', form=form)  
+  return render_template('register.html', title='Register', form=form)  
 
 @app.route("/captions")
 def captions():
@@ -72,10 +76,19 @@ def before_first_request():
 
 @app.context_processor
 def inject_load():
-    # getting previous time stamp
-    file = open("pos.txt","r")
-    pos = int(file.read())
-    file.close()
+#     pos = None
+    try:
+        file = open('pos.txt', 'r')
+    except OSError:
+        print('cannot open ' +  file)
+    else:
+        pos = int(file.read())
+#         print(file, 'has', len(pos.readlines()), 'lines')
+        file.close()
+#    OG code  # getting previous time stamp
+#     file = open("pos.txt","r")
+#     pos = int(file.read())
+#     file.close()
 
     # writing next time stamp
     file = open("pos.txt","w")
