@@ -5,9 +5,21 @@ from audio import printWAV
 import time, random, threading
 from turbo_flask import Turbo
 from flask_bcrypt import Bcrypt
+from flask_behind_proxy import FlaskBehindProxy
+from sqlalchemy.exc import IntegrityError
+from flask_caching import Cache
+
+config = {
+    "DEBUG": True,          # some Flask specific configs
+    "CACHE_TYPE": "SimpleCache",  # Flask-Caching related configs
+    "CACHE_DEFAULT_TIMEOUT": 300
+}
 
 
 app = Flask(__name__)
+app.config.from_mapping(config)
+cache = Cache(app)
+proxied = FlaskBehindProxy(app)
 # app.config['SECRET_KEY'] = '17e81666b51cd4989ff8a76af64ba52a'
 app.config['SECRET_KEY'] = '10364988612687b4f1a2b1cbba9a2243'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
@@ -28,6 +40,13 @@ class User(db.Model):
   def __repr__(self):
     return f"User('{self.username}', '{self.email}')"
   
+@app.route("/")
+@app.route("/index")
+@cache.cached(timeout=50)
+def index():
+     return render_template('index.html')
+#      return 'Cached for 50s'
+  
 @app.route("/home")
 @app.route("/")
 def home():
@@ -40,7 +59,8 @@ def second_page():
 @app.route("/about")
 def about():
     return render_template('about.html', subtitle='About', text='This is the about page')
-  
+
+# @cache.cached(timeout=50, key_prefix='register')
 @app.route("/register", methods=['GET', 'POST'])
 def register():
   form = RegistrationForm()
@@ -52,12 +72,14 @@ def register():
       user = User(username=form.username.data, email=form.email.data, password=form.password.data)
       db.session.add(user)
       db.session.commit()
-    except Exception as e:
-      flash(f'The following error occured {e}')
+    except IntegrityError:
+      flash(f'Cannot create account with the given username.')
+      return redirect(url_for('home')) # if so - send to home page
     else:
       flash(f'Account created for {form.username.data}!', 'success')
       return redirect(url_for('home')) # if so - send to home page
   return render_template('register.html', title='Register', form=form)  
+# cached_register = register()
 
 @app.route("/captions")
 def captions():
